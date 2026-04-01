@@ -1,0 +1,300 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-[#07111f] text-white antialiased;
+  font-family: "Sora", "Segoe UI", sans-serif;
+  background-image:
+    radial-gradient(circle at top left, rgba(81, 130, 255, 0.22), transparent 28%),
+    radial-gradient(circle at 85% 20%, rgba(42, 240, 190, 0.14), transparent 24%),
+    linear-gradient(180deg, #08111d 0%, #09131f 42%, #050a12 100%);
+  min-height: 100vh;
+}
+
+a {
+  @apply transition-opacity hover:opacity-75;
+}
+
+.shell {
+  @apply min-h-screen px-4 py-4 md:px-6 lg:px-8;
+}
+
+.panel {
+  @apply rounded-[28px] border border-white/10 bg-white/[0.045] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.28)] backdrop-blur-xl;
+}
+
+.eyebrow {
+  @apply text-[11px] uppercase tracking-[0.28em] text-white/55;
+}
+
+.button-primary {
+  @apply inline-flex items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#08111d];
+}
+
+.button-secondary {
+  @apply inline-flex items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-white;
+}
+
+.input {
+  @apply w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/35 focus:border-[#71a2ff] focus:ring-2 focus:ring-[#71a2ff]/20;
+}
+
+.display {
+  font-family: "Space Grotesk", "Sora", "Segoe UI", sans-serif;
+}
+
+.grid-glow {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+
+.topbar {
+  @apply sticky top-0 z-30 w-full border border-white/10 px-4 py-4 shadow-[0_18px_50px_rgba(0,0,0,0.3)] backdrop-blur-xl;
+  background: rgba(9, 19, 33, 0.72);
+}
+
+.status-pill {
+  @apply inline-flex items-center gap-2 rounded-full border border-[#7ce7ca]/20 bg-[#7ce7ca]/10 px-3 py-1 text-xs font-medium text-[#9ff8dd];
+}
+
+.hero-orb {
+  position: absolute;
+  inset: auto;
+  border-radius: 999px;
+  filter: blur(30px);
+  opacity: 0.75;
+}
+
+.page-frame {
+  @apply mx-auto w-full max-w-[1600px];
+}
+
+.hero-stage {
+  position: relative;
+  overflow: hidden;
+  border-radius: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(circle at 20% 20%, rgba(103, 138, 255, 0.24), transparent 26%),
+    radial-gradient(circle at 80% 25%, rgba(56, 219, 188, 0.14), transparent 22%),
+    linear-gradient(135deg, rgba(12, 24, 40, 0.96), rgba(8, 15, 28, 0.98));
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.33);
+}
+
+.hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.22;
+  filter: saturate(0.9) brightness(0.5);
+}
+
+.hero-video-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(6, 12, 22, 0.94) 0%, rgba(7, 14, 24, 0.82) 42%, rgba(7, 14, 24, 0.42) 100%),
+    linear-gradient(180deg, rgba(6, 10, 18, 0.18) 0%, rgba(6, 10, 18, 0.52) 100%);
+}
+
+.hero-lines {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(180deg, rgba(255, 255, 255, 0.7), transparent 88%);
+}
+
+.hero-ring {
+  position: absolute;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  animation: drift 12s ease-in-out infinite;
+}
+
+.hero-float {
+  animation: floaty 6s ease-in-out infinite;
+}
+
+.hero-glow {
+  animation: pulseGlow 7s ease-in-out infinite;
+}
+
+.brandmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  perspective: 1200px;
+  opacity: 0;
+  animation: brandReveal 1s ease-out forwards;
+}
+
+.brandmark-core {
+  letter-spacing: -0.04em;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: brandTextReveal 0.7s ease-out 0.12s forwards;
+}
+
+.brandmark-flip {
+  position: relative;
+  display: inline-flex;
+  height: 2.2rem;
+  min-width: 4.4rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(135deg, rgba(94, 133, 255, 0.22), rgba(58, 222, 193, 0.14));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 10px 24px rgba(0, 0, 0, 0.22);
+  overflow: hidden;
+  transform-style: preserve-3d;
+  opacity: 0;
+  transform: rotateY(-70deg) translateY(10px);
+  animation:
+    brandPillReveal 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.18s forwards,
+    brandIdle 8s ease-in-out 1.2s infinite;
+}
+
+.brandmark-flip::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 20%, rgba(255, 255, 255, 0.32) 50%, transparent 80%);
+  transform: translateX(-140%);
+  animation: brandSweep 6.5s ease-in-out 1.3s infinite;
+}
+
+.brandmark:hover .brandmark-flip {
+  animation-duration: 1.8s;
+  animation-name: brandHoverFlip;
+}
+
+.brandmark-flip span {
+  position: relative;
+  z-index: 1;
+  font-size: 0.92rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+@keyframes drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, -10px, 0) scale(1.03);
+  }
+}
+
+@keyframes floaty {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes pulseGlow {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+
+@keyframes brandIdle {
+  0%,
+  100% {
+    transform: rotateX(0deg) rotateY(0deg) translateY(0);
+  }
+  20% {
+    transform: rotateX(0deg) rotateY(0deg) translateY(0);
+  }
+  30% {
+    transform: rotateX(0deg) rotateY(16deg) translateY(-1px);
+  }
+  40% {
+    transform: rotateX(0deg) rotateY(-10deg) translateY(0);
+  }
+  50% {
+    transform: rotateX(0deg) rotateY(0deg) translateY(0);
+  }
+}
+
+@keyframes brandReveal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes brandTextReveal {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes brandPillReveal {
+  0% {
+    opacity: 0;
+    transform: rotateY(-70deg) translateY(10px) scale(0.94);
+  }
+  65% {
+    opacity: 1;
+    transform: rotateY(10deg) translateY(0) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: rotateY(0deg) translateY(0) scale(1);
+  }
+}
+
+@keyframes brandHoverFlip {
+  0% {
+    transform: rotateX(0deg) rotateY(0deg);
+  }
+  35% {
+    transform: rotateX(0deg) rotateY(90deg);
+  }
+  70% {
+    transform: rotateX(0deg) rotateY(180deg);
+  }
+  100% {
+    transform: rotateX(0deg) rotateY(360deg);
+  }
+}
+
+@keyframes brandSweep {
+  0%,
+  100% {
+    transform: translateX(-140%);
+  }
+  45%,
+  65% {
+    transform: translateX(140%);
+  }
+}

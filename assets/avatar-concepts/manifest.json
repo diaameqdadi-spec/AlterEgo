@@ -1,0 +1,52 @@
+{
+  "avatars": [
+    {
+      "id": "nova",
+      "display_name": "Nova",
+      "theme": "blue-cyan premium futurist",
+      "source_variant": "",
+      "final_asset": "frontend/public/assets/avatars/nova.png",
+      "status": "planned"
+    },
+    {
+      "id": "pulse",
+      "display_name": "Pulse",
+      "theme": "violet electric social-tech",
+      "source_variant": "",
+      "final_asset": "frontend/public/assets/avatars/pulse.png",
+      "status": "planned"
+    },
+    {
+      "id": "sage",
+      "display_name": "Sage",
+      "theme": "green mentor calm",
+      "source_variant": "",
+      "final_asset": "frontend/public/assets/avatars/sage.png",
+      "status": "planned"
+    },
+    {
+      "id": "onyx",
+      "display_name": "Onyx",
+      "theme": "black gunmetal premium",
+      "source_variant": "",
+      "final_asset": "frontend/public/assets/avatars/onyx.png",
+      "status": "planned"
+    },
+    {
+      "id": "sentinel",
+      "display_name": "Sentinel",
+      "theme": "tactical amber guardian",
+      "source_variant": "",
+      "final_asset": "frontend/public/assets/avatars/sentinel.png",
+      "status": "planned"
+    },
+    {
+      "id": "oracle",
+      "display_name": "Oracle",
+      "theme": "silver ice-blue strategist",
+      "source_variant": "",
+      "final_asset": "frontend/public/assets/avatars/oracle.png",
+      "status": "planned"
+    }
+  ]
+}
