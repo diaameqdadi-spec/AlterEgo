@@ -47,11 +47,14 @@ export async function createAvatar(payload: AvatarPayload) {
   return (await apiRequest("/api/v1/avatars", {
     method: "POST",
     body: JSON.stringify(payload),
+    requireAuth: true,
   })) as StoredAvatar;
 }
 
 export async function listAvatars() {
-  const avatars = (await apiRequest("/api/v1/avatars")) as StoredAvatar[];
+  const avatars = (await apiRequest("/api/v1/avatars", {
+    requireAuth: true,
+  })) as StoredAvatar[];
   return sortAvatars(avatars);
 }
 
@@ -64,6 +67,7 @@ export async function runChallenge(avatarId: string, questionId: string) {
   return apiRequest("/api/v1/challenges/run", {
     method: "POST",
     body: JSON.stringify({ avatarId, questionId }),
+    requireAuth: true,
   });
 }
 

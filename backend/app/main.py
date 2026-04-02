@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes import router
 from app.services.auth import init_auth_db
+from app.services.challenges import init_challenge_db
 
 app = FastAPI(
     title="Alter Ego API",
@@ -27,6 +28,7 @@ def healthcheck() -> dict[str, str]:
 @app.on_event("startup")
 def startup() -> None:
     init_auth_db()
+    init_challenge_db()
 
 
 app.include_router(router)

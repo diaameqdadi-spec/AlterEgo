@@ -37,6 +37,18 @@ class ChallengeRunResult(BaseModel):
     challengeType: Literal["arithmetic", "algebra", "word_problem"]
 
 
+class ChallengeAttemptRead(BaseModel):
+    id: str
+    avatarId: str
+    avatarName: str
+    questionId: str
+    challengeType: Literal["arithmetic", "algebra", "word_problem"]
+    submittedAnswer: str
+    expectedAnswer: str
+    isCorrect: bool
+    createdAt: int
+
+
 class LeaderboardEntry(BaseModel):
     avatarId: str
     avatarName: str
