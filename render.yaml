@@ -12,6 +12,8 @@ services:
       mountPath: /opt/render/project/src/backend/data
       sizeGB: 1
     envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.5
       - key: ALTEREGO_SQLITE_PATH
         value: /opt/render/project/src/backend/data/alterego.db
       - key: ALTEREGO_AUTH_SECRET
