@@ -25,6 +25,7 @@ npm run dev
 ```
 
 Set `NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000` in `frontend/.env.local` if your API is running locally on the default FastAPI port.
+For production, set `NEXT_PUBLIC_API_BASE_URL` in your frontend host to the deployed backend URL.
 
 ### Backend
 
@@ -38,6 +39,11 @@ uvicorn app.main:app --reload
 
 Set `OPENAI_API_KEY` in `backend/.env` or in your shell if you want real model-backed challenge runs. Without an API key, the scaffold falls back to the local simulator so the app still works during setup.
 You can also set `ALTEREGO_AUTH_SECRET` in `backend/.env` before deploying so session tokens are not signed with the default development secret.
+If the frontend is deployed separately, set `ALTEREGO_CORS_ORIGIN_REGEX` so the backend allows that origin. Example:
+
+```env
+ALTEREGO_CORS_ORIGIN_REGEX=https://.*\.vercel\.app
+```
 
 ### Database
 

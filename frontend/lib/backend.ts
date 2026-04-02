@@ -2,9 +2,22 @@ const DEFAULT_API_BASE_URL = "http://127.0.0.1:8000";
 const AUTH_TOKEN_KEY = "alterego_auth_token";
 
 export function getApiBaseUrl() {
-  return (
-    process.env.NEXT_PUBLIC_API_BASE_URL?.trim().replace(/\/+$/, "") ||
-    DEFAULT_API_BASE_URL
+  const configuredBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.trim().replace(/\/+$/, "");
+  if (configuredBaseUrl) {
+    return configuredBaseUrl;
+  }
+
+  if (typeof window === "undefined") {
+    return DEFAULT_API_BASE_URL;
+  }
+
+  const { hostname } = window.location;
+  if (hostname === "localhost" || hostname === "127.0.0.1") {
+    return DEFAULT_API_BASE_URL;
+  }
+
+  throw new Error(
+    "API not configured for this deployment. Set NEXT_PUBLIC_API_BASE_URL to your backend URL."
   );
 }
 
@@ -54,10 +67,19 @@ export async function apiRequest(path: string, options: RequestOptions = {}) {
     headers.set("Authorization", `Bearer ${token}`);
   }
 
-  const response = await fetch(`${getApiBaseUrl()}${path}`, {
-    ...options,
-    headers,
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${getApiBaseUrl()}${path}`, {
+      ...options,
+      headers,
+    });
+  } catch (error) {
+    throw new Error(
+      error instanceof Error
+        ? `Network request failed. Check NEXT_PUBLIC_API_BASE_URL and backend CORS settings. ${error.message}`
+        : "Network request failed. Check NEXT_PUBLIC_API_BASE_URL and backend CORS settings."
+    );
+  }
 
   const isJson = response.headers.get("content-type")?.includes("application/json");
   const payload = isJson ? await response.json() : null;

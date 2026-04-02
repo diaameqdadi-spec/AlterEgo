@@ -26,3 +26,10 @@ def get_database_path() -> str:
     if value:
         return value
     return str(BASE_DIR / "data" / "alterego.db")
+
+
+def get_cors_origin_regex() -> str:
+    value = os.getenv("ALTEREGO_CORS_ORIGIN_REGEX", "").strip()
+    if value:
+        return value
+    return r"https?://(localhost|127\.0\.0\.1)(:\d+)?"
