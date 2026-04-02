@@ -40,6 +40,7 @@ class ChallengeRunResult(BaseModel):
 class LeaderboardEntry(BaseModel):
     avatarId: str
     avatarName: str
+    appearanceId: str | None = None
     totalScore: int
     challengesAttempted: int
     accuracy: int

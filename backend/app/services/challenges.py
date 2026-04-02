@@ -133,6 +133,7 @@ def get_leaderboard() -> list[dict]:
             LeaderboardEntry(
                 avatarId=avatar.id,
                 avatarName=avatar.name,
+                appearanceId=avatar.appearance_id,
                 totalScore=avatar.total_score,
                 challengesAttempted=avatar.challenges_attempted,
                 accuracy=accuracy,

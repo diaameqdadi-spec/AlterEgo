@@ -1,9 +1,9 @@
-import { createClient } from "@supabase/supabase-js";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-let supabaseClient: ReturnType<typeof createClient> | null = null;
+import {
+  apiRequest,
+  clearStoredAuthToken,
+  getStoredAuthToken,
+  setStoredAuthToken,
+} from "@/lib/backend";
 
 export type AuthUser = {
   id: string;
@@ -12,35 +12,22 @@ export type AuthUser = {
   createdAt: string;
 };
 
-function ensureConfigured() {
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error(
-      "Supabase is not configured yet. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in frontend/.env.local."
-    );
-  }
-}
-
-function getSupabaseClient() {
-  ensureConfigured();
-
-  if (!supabaseClient) {
-    supabaseClient = createClient(supabaseUrl!, supabaseAnonKey!);
-  }
-
-  return supabaseClient;
-}
-
 function mapUser(user: {
   id: string;
-  email?: string | null;
-  created_at?: string;
-  user_metadata?: { display_name?: string };
+  email: string;
+  displayName: string;
+  createdAt: number | string;
 }): AuthUser {
+  const createdAt =
+    typeof user.createdAt === "number"
+      ? new Date(user.createdAt * 1000).toISOString()
+      : user.createdAt;
+
   return {
     id: user.id,
-    email: user.email ?? "",
-    displayName: user.user_metadata?.display_name ?? user.email ?? "User",
-    createdAt: user.created_at ?? new Date().toISOString(),
+    email: user.email,
+    displayName: user.displayName,
+    createdAt,
   };
 }
 
@@ -49,71 +36,42 @@ export async function registerAccount(payload: {
   displayName: string;
   password: string;
 }) {
-  ensureConfigured();
+  const response = (await apiRequest("/api/v1/auth/register", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  })) as { token: string; user: AuthUser };
 
-  const { data, error } = await getSupabaseClient().auth.signUp({
-    email: payload.email,
-    password: payload.password,
-    options: {
-      data: {
-        display_name: payload.displayName,
-      },
-    },
-  });
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  if (!data.user) {
-    throw new Error("Signup did not return a user.");
-  }
-
-  return mapUser(data.user);
+  setStoredAuthToken(response.token);
+  return mapUser(response.user);
 }
 
 export async function loginAccount(payload: { email: string; password: string }) {
-  ensureConfigured();
+  const response = (await apiRequest("/api/v1/auth/login", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  })) as { token: string; user: AuthUser };
 
-  const { data, error } = await getSupabaseClient().auth.signInWithPassword({
-    email: payload.email,
-    password: payload.password,
-  });
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  if (!data.user) {
-    throw new Error("Login did not return a user.");
-  }
-
-  return mapUser(data.user);
+  setStoredAuthToken(response.token);
+  return mapUser(response.user);
 }
 
 export async function fetchCurrentUser() {
-  ensureConfigured();
-
-  const {
-    data: { user },
-    error,
-  } = await getSupabaseClient().auth.getUser();
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  if (!user) {
+  const token = getStoredAuthToken();
+  if (!token) {
     return null;
   }
 
-  return mapUser(user);
+  try {
+    const user = (await apiRequest("/api/v1/auth/me", {
+      requireAuth: true,
+    })) as AuthUser;
+    return mapUser(user);
+  } catch (error) {
+    clearStoredAuthToken();
+    throw error;
+  }
 }
 
 export async function logoutAccount() {
-  ensureConfigured();
-  const { error } = await getSupabaseClient().auth.signOut();
-  if (error) {
-    throw new Error(error.message);
-  }
+  clearStoredAuthToken();
 }
