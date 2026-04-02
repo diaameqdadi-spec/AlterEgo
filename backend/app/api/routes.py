@@ -1,12 +1,20 @@
 from fastapi import APIRouter, Header, HTTPException
 
-from app.schemas import AvatarCreate, ChallengeRunRequest, LoginRequest, RegisterRequest
+from app.schemas import (
+    AvatarChatRequest,
+    AvatarCreate,
+    ChallengeRunRequest,
+    LoginRequest,
+    RegisterRequest,
+)
 from app.services.challenges import (
     create_avatar,
     get_leaderboard,
+    list_avatar_messages,
     list_challenge_attempts,
     list_avatar_dicts,
     run_challenge,
+    send_avatar_message,
 )
 from app.services.auth import (
     authenticate_user,
@@ -70,6 +78,30 @@ def create_avatar_route(
 ) -> dict:
     current_user = get_current_user(authorization)
     return create_avatar(current_user["id"], payload)
+
+
+@router.get("/avatars/{avatar_id}/messages")
+def avatar_messages_route(
+    avatar_id: str, authorization: str | None = Header(default=None)
+) -> list[dict]:
+    current_user = get_current_user(authorization)
+    try:
+        return list_avatar_messages(current_user["id"], avatar_id)
+    except ValueError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+
+
+@router.post("/avatars/{avatar_id}/messages")
+def avatar_message_create_route(
+    avatar_id: str,
+    payload: AvatarChatRequest,
+    authorization: str | None = Header(default=None),
+) -> list[dict]:
+    current_user = get_current_user(authorization)
+    try:
+        return send_avatar_message(current_user["id"], avatar_id, payload.content)
+    except ValueError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
 
 
 @router.post("/challenges/run")

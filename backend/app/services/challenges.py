@@ -6,9 +6,14 @@ from pathlib import Path
 from uuid import uuid4
 
 from app.config import get_database_path
-from app.models import Avatar, Challenge
-from app.schemas import AvatarCreate, ChallengeAttemptRead, LeaderboardEntry
-from app.services.llm import generate_math_answer
+from app.models import Avatar, AvatarMessage, Challenge
+from app.schemas import (
+    AvatarCreate,
+    AvatarMessageRead,
+    ChallengeAttemptRead,
+    LeaderboardEntry,
+)
+from app.services.llm import generate_avatar_chat_reply, generate_math_answer
 
 
 CHALLENGES: dict[str, Challenge] = {
@@ -77,6 +82,18 @@ def init_challenge_db() -> None:
         )
         connection.execute(
             """
+            create table if not exists avatar_messages (
+                id text primary key,
+                avatar_id text not null references avatars(id) on delete cascade,
+                user_id text not null references users(id) on delete cascade,
+                role text not null check (role in ('user', 'avatar')),
+                content text not null,
+                created_at integer not null
+            )
+            """
+        )
+        connection.execute(
+            """
             create index if not exists idx_avatars_user_id
             on avatars (user_id)
             """
@@ -91,6 +108,12 @@ def init_challenge_db() -> None:
             """
             create index if not exists idx_challenge_attempts_avatar_id
             on challenge_attempts (avatar_id)
+            """
+        )
+        connection.execute(
+            """
+            create index if not exists idx_avatar_messages_avatar_id
+            on avatar_messages (avatar_id, created_at)
             """
         )
         connection.commit()
@@ -116,6 +139,27 @@ def _row_to_avatar(row: sqlite3.Row) -> Avatar:
         challenges_attempted=row["challenges_attempted"],
         created_at=row["created_at"],
     )
+
+
+def _row_to_avatar_message(row: sqlite3.Row) -> AvatarMessage:
+    return AvatarMessage(
+        id=row["id"],
+        avatar_id=row["avatar_id"],
+        user_id=row["user_id"],
+        role=row["role"],
+        content=row["content"],
+        created_at=row["created_at"],
+    )
+
+
+def _serialize_avatar_message(message: AvatarMessage) -> dict:
+    return AvatarMessageRead(
+        id=message.id,
+        avatarId=message.avatar_id,
+        role=message.role,  # type: ignore[arg-type]
+        content=message.content,
+        createdAt=message.created_at,
+    ).model_dump()
 
 
 def list_avatar_dicts(user_id: str) -> list[dict]:
@@ -145,6 +189,21 @@ def list_avatar_dicts(user_id: str) -> list[dict]:
         }
         for avatar in avatars
     ]
+
+
+def _get_avatar_for_user(connection: sqlite3.Connection, user_id: str, avatar_id: str) -> Avatar:
+    row = connection.execute(
+        """
+        select id, user_id, name, persona, math_strategy, appearance_id,
+               total_score, challenges_attempted, created_at
+        from avatars
+        where id = ? and user_id = ?
+        """,
+        (avatar_id, user_id),
+    ).fetchone()
+    if row is None:
+        raise ValueError("Avatar not found")
+    return _row_to_avatar(row)
 
 
 def create_avatar(user_id: str, payload: AvatarCreate) -> dict:
@@ -194,20 +253,7 @@ def create_avatar(user_id: str, payload: AvatarCreate) -> dict:
 
 def run_challenge(user_id: str, avatar_id: str, question_id: str) -> dict:
     with _connect() as connection:
-        row = connection.execute(
-            """
-            select id, user_id, name, persona, math_strategy, appearance_id,
-                   total_score, challenges_attempted, created_at
-            from avatars
-            where id = ? and user_id = ?
-            """,
-            (avatar_id, user_id),
-        ).fetchone()
-
-        if row is None:
-            raise ValueError("Avatar not found")
-
-        avatar = _row_to_avatar(row)
+        avatar = _get_avatar_for_user(connection, user_id, avatar_id)
 
         challenge = CHALLENGES.get(question_id)
         if challenge is None:
@@ -263,6 +309,82 @@ def run_challenge(user_id: str, avatar_id: str, question_id: str) -> dict:
         "challengesAttempted": avatar.challenges_attempted,
         "challengeType": challenge.challenge_type,
     }
+
+
+def list_avatar_messages(user_id: str, avatar_id: str) -> list[dict]:
+    with _connect() as connection:
+        _get_avatar_for_user(connection, user_id, avatar_id)
+        rows = connection.execute(
+            """
+            select id, avatar_id, user_id, role, content, created_at
+            from avatar_messages
+            where avatar_id = ? and user_id = ?
+            order by created_at asc
+            """,
+            (avatar_id, user_id),
+        ).fetchall()
+
+    return [_serialize_avatar_message(_row_to_avatar_message(row)) for row in rows]
+
+
+def send_avatar_message(user_id: str, avatar_id: str, content: str) -> list[dict]:
+    cleaned_content = content.strip()
+    if not cleaned_content:
+        raise ValueError("Message cannot be empty")
+
+    with _connect() as connection:
+        avatar = _get_avatar_for_user(connection, user_id, avatar_id)
+        existing_rows = connection.execute(
+            """
+            select id, avatar_id, user_id, role, content, created_at
+            from avatar_messages
+            where avatar_id = ? and user_id = ?
+            order by created_at asc
+            """,
+            (avatar_id, user_id),
+        ).fetchall()
+        history = [_row_to_avatar_message(row) for row in existing_rows]
+
+        user_message = AvatarMessage(
+            id=str(uuid4()),
+            avatar_id=avatar_id,
+            user_id=user_id,
+            role="user",
+            content=cleaned_content,
+            created_at=int(time.time()),
+        )
+        reply = generate_avatar_chat_reply(avatar, history, cleaned_content)
+        if reply is None:
+            reply = simulate_avatar_chat_reply(avatar, cleaned_content)
+        avatar_message = AvatarMessage(
+            id=str(uuid4()),
+            avatar_id=avatar_id,
+            user_id=user_id,
+            role="avatar",
+            content=reply,
+            created_at=int(time.time()),
+        )
+
+        for message in (user_message, avatar_message):
+            connection.execute(
+                """
+                insert into avatar_messages (
+                    id, avatar_id, user_id, role, content, created_at
+                )
+                values (?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    message.id,
+                    message.avatar_id,
+                    message.user_id,
+                    message.role,
+                    message.content,
+                    message.created_at,
+                ),
+            )
+        connection.commit()
+
+    return [_serialize_avatar_message(message) for message in [*history, user_message, avatar_message]]
 
 
 def list_challenge_attempts(user_id: str) -> list[dict]:
@@ -357,3 +479,24 @@ def simulate_avatar_answer(avatar: Avatar, challenge: Challenge) -> str:
         return "5"
 
     return "4"
+
+
+def simulate_avatar_chat_reply(avatar: Avatar, user_input: str) -> str:
+    lower_input = user_input.lower()
+
+    if "who are you" in lower_input:
+        return f"I am {avatar.name}. {avatar.persona}"
+
+    if "math" in lower_input or "challenge" in lower_input:
+        return f"My challenge style is shaped by this strategy: {avatar.math_strategy}"
+
+    if "help" in lower_input or "plan" in lower_input:
+        return (
+            f"I can help you sharpen your identity, prep for challenge rounds, "
+            f"and think in the tone of {avatar.name}."
+        )
+
+    return (
+        f"{avatar.name} here. {avatar.persona} "
+        f"I would approach that with a focus on clarity and intent."
+    )

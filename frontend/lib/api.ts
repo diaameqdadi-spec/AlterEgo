@@ -1,7 +1,5 @@
 import { apiRequest } from "@/lib/backend";
 
-const STORAGE_PREFIX = "alterego_avatars";
-
 type AvatarPayload = {
   name: string;
   persona: string;
@@ -26,12 +24,20 @@ export type ChatMessage = {
   id: string;
   role: "user" | "avatar";
   content: string;
-  createdAt: string;
+  createdAt: number;
 };
 
-function getChatStorageKey(avatarId: string) {
-  return `${STORAGE_PREFIX}:chat:${avatarId}`;
-}
+export type ChallengeHistoryEntry = {
+  id: string;
+  avatarId: string;
+  avatarName: string;
+  questionId: string;
+  challengeType: "arithmetic" | "algebra" | "word_problem";
+  submittedAnswer: string;
+  expectedAnswer: string;
+  isCorrect: boolean;
+  createdAt: number;
+};
 
 function sortAvatars(avatars: StoredAvatar[]) {
   return [...avatars].sort((a, b) => {
@@ -75,63 +81,22 @@ export async function getLeaderboard() {
   return apiRequest("/api/v1/leaderboard");
 }
 
-export function listAvatarMessages(avatarId: string) {
-  if (typeof window === "undefined") {
-    return [] as ChatMessage[];
-  }
-
-  const raw = localStorage.getItem(getChatStorageKey(avatarId));
-  if (!raw) {
-    return [] as ChatMessage[];
-  }
-
-  try {
-    return JSON.parse(raw) as ChatMessage[];
-  } catch {
-    return [] as ChatMessage[];
-  }
+export async function listAvatarMessages(avatarId: string) {
+  return (await apiRequest(`/api/v1/avatars/${avatarId}/messages`, {
+    requireAuth: true,
+  })) as ChatMessage[];
 }
 
 export async function sendAvatarMessage(avatarId: string, content: string) {
-  const avatars = await listAvatars();
-  const avatar = avatars.find((item) => item.id === avatarId);
-  if (!avatar) {
-    throw new Error("Avatar not found.");
-  }
-
-  const messages = listAvatarMessages(avatarId);
-  const userMessage: ChatMessage = {
-    id: crypto.randomUUID(),
-    role: "user",
-    content: content.trim(),
-    createdAt: new Date().toISOString(),
-  };
-  const avatarMessage: ChatMessage = {
-    id: crypto.randomUUID(),
-    role: "avatar",
-    content: generateAvatarReply(avatar, userMessage.content),
-    createdAt: new Date().toISOString(),
-  };
-
-  const nextMessages = [...messages, userMessage, avatarMessage];
-  localStorage.setItem(getChatStorageKey(avatarId), JSON.stringify(nextMessages));
-  return nextMessages;
+  return (await apiRequest(`/api/v1/avatars/${avatarId}/messages`, {
+    method: "POST",
+    body: JSON.stringify({ content }),
+    requireAuth: true,
+  })) as ChatMessage[];
 }
 
-function generateAvatarReply(avatar: StoredAvatar, userInput: string) {
-  const lowerInput = userInput.toLowerCase();
-
-  if (lowerInput.includes("who are you")) {
-    return `I am ${avatar.name}. ${avatar.persona}`;
-  }
-
-  if (lowerInput.includes("math") || lowerInput.includes("challenge")) {
-    return `I am tuned for challenge work. My strategy is: ${avatar.mathStrategy}`;
-  }
-
-  if (lowerInput.includes("help")) {
-    return `I can help shape your identity, prepare for challenges, and respond in the style you gave me.`;
-  }
-
-  return `${avatar.name} here. I would approach that with this persona: ${avatar.persona}`;
+export async function getChallengeHistory() {
+  return (await apiRequest("/api/v1/challenges/history", {
+    requireAuth: true,
+  })) as ChallengeHistoryEntry[];
 }

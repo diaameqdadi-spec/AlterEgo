@@ -33,3 +33,13 @@ class ChallengeAttempt:
     expected_answer: str
     is_correct: bool
     created_at: int
+
+
+@dataclass(frozen=True)
+class AvatarMessage:
+    id: str
+    avatar_id: str
+    user_id: str
+    role: str
+    content: str
+    created_at: int

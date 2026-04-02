@@ -49,6 +49,18 @@ class ChallengeAttemptRead(BaseModel):
     createdAt: int
 
 
+class AvatarChatRequest(BaseModel):
+    content: str = Field(min_length=1, max_length=2000)
+
+
+class AvatarMessageRead(BaseModel):
+    id: str
+    avatarId: str
+    role: Literal["user", "avatar"]
+    content: str
+    createdAt: int
+
+
 class LeaderboardEntry(BaseModel):
     avatarId: str
     avatarName: str

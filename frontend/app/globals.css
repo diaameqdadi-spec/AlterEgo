@@ -41,7 +41,7 @@ a {
 }
 
 .input {
-  @apply w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/35 focus:border-[#71a2ff] focus:ring-2 focus:ring-[#71a2ff]/20;
+  @apply w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/[0.35] focus:border-[#71a2ff] focus:ring-2 focus:ring-[#71a2ff]/20;
 }
 
 .display {
@@ -189,6 +189,129 @@ a {
   letter-spacing: -0.03em;
 }
 
+.dashboard-hero {
+  position: relative;
+  background:
+    radial-gradient(circle at 12% 20%, rgba(98, 134, 255, 0.2), transparent 28%),
+    radial-gradient(circle at 82% 22%, rgba(51, 223, 191, 0.12), transparent 24%),
+    linear-gradient(135deg, rgba(14, 24, 38, 0.96), rgba(9, 15, 28, 0.98));
+}
+
+.dashboard-noise {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 38px 38px;
+  mask-image: linear-gradient(180deg, rgba(255, 255, 255, 0.8), transparent 92%);
+  pointer-events: none;
+}
+
+.metric-card {
+  @apply rounded-[24px] border border-white/10 bg-white/[0.035] p-4 backdrop-blur-xl;
+}
+
+.metric-label {
+  @apply text-[11px] uppercase tracking-[0.24em] text-white/[0.38];
+}
+
+.metric-value {
+  @apply mt-3 text-3xl font-semibold text-white/[0.94];
+}
+
+.metric-subtle {
+  @apply mt-2 text-sm text-white/[0.48];
+}
+
+.dashboard-card-stack {
+  position: relative;
+  min-height: 100%;
+}
+
+.dashboard-profile-card {
+  position: relative;
+  z-index: 2;
+  border-radius: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.03));
+  padding: 1.5rem;
+  box-shadow: 0 34px 80px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(24px);
+}
+
+.dashboard-float-card {
+  position: absolute;
+  right: 1rem;
+  bottom: -0.5rem;
+  z-index: 3;
+  width: min(240px, 72%);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(13, 24, 40, 0.88);
+  padding: 1rem 1.1rem;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(20px);
+}
+
+.dashboard-orb {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(36px);
+  opacity: 0.8;
+  animation: pulseGlow 7s ease-in-out infinite;
+}
+
+.chat-shell {
+  background:
+    radial-gradient(circle at top right, rgba(74, 114, 255, 0.1), transparent 30%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.03));
+}
+
+.chat-stage {
+  @apply mt-4 rounded-[28px] border border-white/10 p-4;
+  background: rgba(10, 19, 32, 0.82);
+}
+
+.chat-thread {
+  @apply max-h-[36rem] space-y-3 overflow-y-auto pr-2;
+}
+
+.chat-compose {
+  @apply mt-4 flex flex-col gap-3 border-t border-white/[0.08] pt-4 md:flex-row;
+}
+
+.chat-empty-state {
+  @apply flex min-h-[20rem] flex-col items-start justify-center rounded-[26px] border border-dashed border-white/10 bg-white/[0.02] px-6 py-8;
+}
+
+.chat-bubble {
+  @apply max-w-[86%] rounded-[28px] px-4 py-4 shadow-[0_16px_30px_rgba(0,0,0,0.18)];
+}
+
+.chat-bubble-user {
+  @apply ml-auto rounded-br-md bg-[#3d74ff] text-white;
+}
+
+.chat-bubble-avatar {
+  @apply rounded-bl-md border border-white/10 bg-white/[0.05] text-white/[0.82];
+}
+
+.chat-bubble-role {
+  @apply text-[11px] uppercase tracking-[0.22em] text-white/[0.42];
+}
+
+.skeleton-bubble {
+  border-radius: 26px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+  background-size: 200% 100%;
+  animation: shimmer 1.8s linear infinite;
+}
+
+.timeline-card {
+  @apply rounded-[24px] border border-white/10 bg-white/[0.035] p-4 transition-transform duration-300 hover:-translate-y-1 hover:border-white/[0.16];
+}
+
 @keyframes drift {
   0%,
   100% {
@@ -296,5 +419,14 @@ a {
   45%,
   65% {
     transform: translateX(140%);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
   }
 }
