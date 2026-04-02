@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: alter-ego-api
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    plan: starter
+    healthCheckPath: /health
+    disk:
+      name: alter-ego-data
+      mountPath: /opt/render/project/src/backend/data
+      sizeGB: 1
+    envVars:
+      - key: ALTEREGO_SQLITE_PATH
+        value: /opt/render/project/src/backend/data/alterego.db
+      - key: ALTEREGO_AUTH_SECRET
+        generateValue: true
+      - key: ALTEREGO_CORS_ORIGIN_REGEX
+        value: https://.*\\.vercel\\.app
+      - key: OPENAI_API_KEY
+        sync: false

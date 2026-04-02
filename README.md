@@ -45,6 +45,26 @@ If the frontend is deployed separately, set `ALTEREGO_CORS_ORIGIN_REGEX` so the 
 ALTEREGO_CORS_ORIGIN_REGEX=https://.*\.vercel\.app
 ```
 
+## Backend Deployment
+
+The current backend uses SQLite, so it needs persistent disk storage in production. A practical path is Render with a persistent disk.
+
+This repo now includes [`render.yaml`](render.yaml) for the backend service. It configures:
+
+- `rootDir: backend`
+- `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+- `/health` as the health check
+- a persistent disk mounted at `/opt/render/project/src/backend/data`
+- `ALTEREGO_SQLITE_PATH=/opt/render/project/src/backend/data/alterego.db`
+
+After creating the Render service, set your frontend host env var:
+
+```env
+NEXT_PUBLIC_API_BASE_URL=https://your-render-service.onrender.com
+```
+
+Then redeploy the frontend.
+
 ### Database
 
 Apply [`database/schema.sql`](database/schema.sql) to a PostgreSQL database once you are ready to move past the in-memory backend scaffold.
